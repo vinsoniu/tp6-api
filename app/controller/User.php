@@ -4,7 +4,10 @@ declare (strict_types = 1);
 namespace app\controller;
 
 use think\Request;
+use think\facade\Validate;
 use app\model\User as UserModel;
+use app\validate\User as UserValidate;
+use think\exception\ValidateException;
 
 class User extends Base
 {
@@ -20,9 +23,9 @@ class User extends Base
             ->select();
 
         if ($data->isEmpty()) {
-            return $this->create($data,'无数据~',204);
+            return $this->create([],'无数据~',204);
         } else {
-            return $this->create($data,'数据请求成功');
+            return $this->create($data,'数据请求成功',200);
         }
     }
 
@@ -34,7 +37,25 @@ class User extends Base
      */
     public function save(Request $request)
     {
-        //
+        // 获取数据
+        $data = $request->param();
+
+        // 验证及错误返回
+        try {
+            validate(UserValidate::class)->check($data);
+        } catch (ValidateException $exception) {
+            return $this->create([],$exception->getError(),404);
+        }
+
+        // 写入数据
+        $data['password'] = md5($data['password']);
+        $return_id = UserModel::create($data)->getData('id');
+
+        if (empty($return_id)) {
+            return $this->create([],'注册失败~',400);
+        } else {
+            return $this->create($return_id,'注册成功~',200);
+        }
     }
 
     /**
@@ -45,7 +66,19 @@ class User extends Base
      */
     public function read($id)
     {
-        //
+        // 判断 id 是否整型
+        if (!Validate::isInteger($id)) {
+            return $this->create([],'id参数不合法',400);
+        }
+
+        // 获取数据
+        $data = UserModel::field('id,username,sex,email')->findOrEmpty($id);
+
+        if ($data->isEmpty()) {
+            return $this->create([],'无数据~',204);
+        } else {
+            return $this->create($data,'数据请求成功',200);
+        }
     }
 
     /**
@@ -57,7 +90,30 @@ class User extends Base
      */
     public function update(Request $request, $id)
     {
-        //
+        // 获取数据
+        $data = $request->param();
+
+        // 验证及错误返回
+        try {
+            validate(UserValidate::class)->scene('edit')->check($data);
+        } catch (ValidateException $exception) {
+            return $this->create([],$exception->getError(),404);
+        }
+
+        $updateData = UserModel::find($id);
+        // 判断邮箱是否一致
+        if ($updateData->email === $data['email']) {
+            return $this->create([],'修改的邮箱与原本邮箱一致~',400);
+        }
+
+        // 数据修改
+        $return_id = UserModel::update($data)->getData('id');
+
+        if (empty($return_id)) {
+            return $this->create([],'修改失败~',400);
+        } else {
+            return $this->create($return_id,'修改成功~',200);
+        }
     }
 
     /**
@@ -68,6 +124,17 @@ class User extends Base
      */
     public function delete($id)
     {
-        //
+        // 判断 id 是否整型
+        if (!Validate::isInteger($id)) {
+            return $this->create([],'id参数不合法',400);
+        }
+
+        // 删除
+        try {
+            UserModel::find($id)->delete();
+            return $this->create([],'删除成功~',200);
+        } catch (\Error $e) {
+            return $this->create([],'错误或无法删除~',400);
+        }
     }
 }
