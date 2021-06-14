@@ -11,4 +11,4 @@
 use think\facade\Route;
 
 // 首页
-Route::get('/','index/index');
+Route::get('/','Index/index');
