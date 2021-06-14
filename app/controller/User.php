@@ -137,4 +137,21 @@ class User extends Base
             return $this->create([],'错误或无法删除~',400);
         }
     }
+
+    public function hobby($id)
+    {
+        // 判断 id 是否整型
+        if (!Validate::isInteger($id)) {
+            return $this->create([],'id参数不合法',400);
+        }
+
+        // 喜好数据集
+        $data = UserModel::find($id)->hobby()->field('id,content')->select();
+
+        if ($data->isEmpty()) {
+            return $this->create([],'无数据~',204);
+        } else {
+            return $this->create($data,'数据请求成功',200);
+        }
+    }
 }
