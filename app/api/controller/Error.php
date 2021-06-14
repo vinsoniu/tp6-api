@@ -1,5 +1,5 @@
 <?php
-namespace app\controller;
+namespace app\api\controller;
 
 /**
  * Class Error

@@ -1,12 +1,12 @@
 <?php
 declare (strict_types = 1);
 
-namespace app\controller;
+namespace app\api\controller;
 
 use think\Request;
 use think\facade\Validate;
-use app\model\User as UserModel;
-use app\validate\User as UserValidate;
+use app\api\model\User as UserModel;
+use app\api\validate\User as UserValidate;
 use think\exception\ValidateException;
 
 class User extends Base
