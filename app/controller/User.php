@@ -138,6 +138,15 @@ class User extends Base
         }
     }
 
+    /**
+     * 用户喜好列表
+     *
+     * @param $id
+     * @return \think\Response
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
     public function hobby($id)
     {
         // 判断 id 是否整型
@@ -152,6 +161,33 @@ class User extends Base
             return $this->create([],'无数据~',204);
         } else {
             return $this->create($data,'数据请求成功',200);
+        }
+    }
+
+    /**
+     * 用户登录
+     *
+     * @param Request $request
+     * @return \think\Response
+     */
+    public function login(Request $request)
+    {
+        $data = $request->param();
+
+        // 验证账户及密码
+        $result = Validate::rule([
+            'username' => 'unique:user,username^password'
+        ])->check([
+            'username' => $data['username'],
+            'password' => md5($data['password'])
+        ]);
+
+        // 判断，反向
+        if (!$result) {
+            session('adminj',$data['username']);
+            return $this->create([],'登录成功~',200);
+        } else {
+            return $this->create([],'用户名或密码错误~',400);
         }
     }
 }

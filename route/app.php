@@ -15,3 +15,6 @@ Route::resource('user', 'User');
 
 // 一对多用户喜好
 Route::get('user/:id/hobby','User/hobby');
+
+// 用户登录
+Route::post('login','User/login');
